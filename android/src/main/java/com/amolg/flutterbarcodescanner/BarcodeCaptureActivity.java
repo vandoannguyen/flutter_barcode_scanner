@@ -85,6 +85,8 @@ public final class BarcodeCaptureActivity extends AppCompatActivity implements B
     private ImageView imgViewBarcodeCaptureUseFlash;
     private ImageView imgViewSwitchCamera;
 
+    private ImageView btClose;
+
     public static int SCAN_MODE = SCAN_MODE_ENUM.QR.ordinal();
 
     public enum SCAN_MODE_ENUM {
@@ -109,35 +111,38 @@ public final class BarcodeCaptureActivity extends AppCompatActivity implements B
         try {
             setContentView(R.layout.barcode_capture);
 
-            String buttonText = "";
-            try {
-                    buttonText = (String) getIntent().getStringExtra("cancelButtonText");
-        } catch (Exception e) {
-            buttonText = "Cancel";
-            Log.e("BCActivity:onCreate()", "onCreate: " + e.getLocalizedMessage());
-        }
+//            String buttonText = "";
+//            try {
+//                buttonText = (String) getIntent().getStringExtra("cancelButtonText");
+//            } catch (Exception e) {
+//                buttonText = "Cancel";
+//                Log.e("BCActivity:onCreate()", "onCreate: " + e.getLocalizedMessage());
+//            }
+//
+//            Button btnBarcodeCaptureCancel = findViewById(R.id.btnBarcodeCaptureCancel);
+//            btnBarcodeCaptureCancel.setText(buttonText);
+//            btnBarcodeCaptureCancel.setOnClickListener(this);
 
-        Button btnBarcodeCaptureCancel = findViewById(R.id.btnBarcodeCaptureCancel);
-        btnBarcodeCaptureCancel.setText(buttonText);
-        btnBarcodeCaptureCancel.setOnClickListener(this);
+            btClose = findViewById(R.id.btnIconClose);
+            btClose.setOnClickListener(this);
 
-        imgViewBarcodeCaptureUseFlash = findViewById(R.id.imgViewBarcodeCaptureUseFlash);
-        imgViewBarcodeCaptureUseFlash.setOnClickListener(this);
-        imgViewBarcodeCaptureUseFlash.setVisibility(FlutterBarcodeScannerPlugin.isShowFlashIcon ? View.VISIBLE : View.GONE);
+            imgViewBarcodeCaptureUseFlash = findViewById(R.id.imgViewBarcodeCaptureUseFlash);
+            imgViewBarcodeCaptureUseFlash.setOnClickListener(this);
+            imgViewBarcodeCaptureUseFlash.setVisibility(FlutterBarcodeScannerPlugin.isShowFlashIcon ? View.VISIBLE : View.GONE);
 
-        imgViewSwitchCamera = findViewById(R.id.imgViewSwitchCamera);
-        imgViewSwitchCamera.setOnClickListener(this);
+            imgViewSwitchCamera = findViewById(R.id.imgViewSwitchCamera);
+            imgViewSwitchCamera.setOnClickListener(this);
 
-        mPreview = findViewById(R.id.preview);
-        mGraphicOverlay = findViewById(R.id.graphicOverlay);
+            mPreview = findViewById(R.id.preview);
+            mGraphicOverlay = findViewById(R.id.graphicOverlay);
 
-        // read parameters from the intent used to launch the activity.
-        boolean autoFocus = true;
-        boolean useFlash = false;
+            // read parameters from the intent used to launch the activity.
+            boolean autoFocus = true;
+            boolean useFlash = false;
 
-        // Check for the camera permission before accessing the camera.  If the
-        // permission is not granted yet, request permission.
-        int rc = ActivityCompat.checkSelfPermission(this, Manifest.permission.CAMERA);
+            // Check for the camera permission before accessing the camera.  If the
+            // permission is not granted yet, request permission.
+            int rc = ActivityCompat.checkSelfPermission(this, Manifest.permission.CAMERA);
             if (rc == PackageManager.PERMISSION_GRANTED) {
                 createCameraSource(autoFocus, useFlash, CameraSource.CAMERA_FACING_BACK);
             } else {
@@ -177,7 +182,7 @@ public final class BarcodeCaptureActivity extends AppCompatActivity implements B
 
         findViewById(R.id.topLayout).setOnClickListener(listener);
         Snackbar.make(mGraphicOverlay, R.string.permission_camera_rationale,
-                Snackbar.LENGTH_INDEFINITE)
+                        Snackbar.LENGTH_INDEFINITE)
                 .setAction(R.string.ok, listener)
                 .show();
     }
@@ -400,18 +405,18 @@ public final class BarcodeCaptureActivity extends AppCompatActivity implements B
             try {
                 if (flashStatus == USE_FLASH.OFF.ordinal()) {
                     flashStatus = USE_FLASH.ON.ordinal();
-                    imgViewBarcodeCaptureUseFlash.setImageResource(R.drawable.ic_barcode_flash_on);
+                    imgViewBarcodeCaptureUseFlash.setImageResource(R.drawable.ic_flash_on);
                     turnOnOffFlashLight(true);
                 } else {
                     flashStatus = USE_FLASH.OFF.ordinal();
-                    imgViewBarcodeCaptureUseFlash.setImageResource(R.drawable.ic_barcode_flash_off);
+                    imgViewBarcodeCaptureUseFlash.setImageResource(R.drawable.ic_flash_off);
                     turnOnOffFlashLight(false);
                 }
             } catch (Exception e) {
                 Toast.makeText(this, "Unable to turn on flash", Toast.LENGTH_SHORT).show();
                 Log.e("BarcodeCaptureActivity", "FlashOnFailure: " + e.getLocalizedMessage());
             }
-        } else if (i == R.id.btnBarcodeCaptureCancel) {
+        } else if (i == R.id.btnIconClose) {
             Barcode barcode = new Barcode();
             barcode.rawValue = "-1";
             barcode.displayValue = "-1";
