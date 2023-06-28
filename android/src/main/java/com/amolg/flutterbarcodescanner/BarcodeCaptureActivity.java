@@ -25,7 +25,10 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.pm.PackageManager;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.hardware.Camera;
+import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 
@@ -43,6 +46,7 @@ import android.view.ScaleGestureDetector;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.Toast;
 
 
@@ -56,7 +60,18 @@ import com.google.android.gms.vision.MultiProcessor;
 import com.google.android.gms.vision.barcode.Barcode;
 import com.google.android.gms.vision.barcode.BarcodeDetector;
 
+import com.google.zxing.BinaryBitmap;
+import com.google.zxing.LuminanceSource;
+import com.google.zxing.MultiFormatReader;
+import com.google.zxing.RGBLuminanceSource;
+import com.google.zxing.ReaderException;
+import com.google.zxing.Result;
+import com.google.zxing.common.HybridBinarizer;
+
+import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.InputStream;
+
 
 /**
  * Activity for the multi-tracker app.  This app detects barcodes and displays the value with the
@@ -68,11 +83,14 @@ public final class BarcodeCaptureActivity extends AppCompatActivity implements B
     // intent request code to handle updating play services if needed.
     private static final int RC_HANDLE_GMS = 9001;
 
+    private static final int REQUEST_CODE_SELECT_IMAGE = 123;
+    public static final int SCAN_QR_FROM_IMAGE = 999;
     // permission request codes need to be < 256
     private static final int RC_HANDLE_CAMERA_PERM = 2;
 
     // constants used to pass extra data in the intent
     public static final String BarcodeObject = "Barcode";
+    public static final String BarcodeImage = "BarcodeImage";
 
     private CameraSource mCameraSource;
     private CameraSourcePreview mPreview;
@@ -86,6 +104,8 @@ public final class BarcodeCaptureActivity extends AppCompatActivity implements B
     private ImageView imgViewSwitchCamera;
 
     private ImageView btClose;
+
+    private LinearLayout btLoadImage;
 
     public static int SCAN_MODE = SCAN_MODE_ENUM.QR.ordinal();
 
@@ -111,18 +131,6 @@ public final class BarcodeCaptureActivity extends AppCompatActivity implements B
         try {
             setContentView(R.layout.barcode_capture);
 
-//            String buttonText = "";
-//            try {
-//                buttonText = (String) getIntent().getStringExtra("cancelButtonText");
-//            } catch (Exception e) {
-//                buttonText = "Cancel";
-//                Log.e("BCActivity:onCreate()", "onCreate: " + e.getLocalizedMessage());
-//            }
-//
-//            Button btnBarcodeCaptureCancel = findViewById(R.id.btnBarcodeCaptureCancel);
-//            btnBarcodeCaptureCancel.setText(buttonText);
-//            btnBarcodeCaptureCancel.setOnClickListener(this);
-
             btClose = findViewById(R.id.btnIconClose);
             btClose.setOnClickListener(this);
 
@@ -135,6 +143,9 @@ public final class BarcodeCaptureActivity extends AppCompatActivity implements B
 
             mPreview = findViewById(R.id.preview);
             mGraphicOverlay = findViewById(R.id.graphicOverlay);
+
+            btLoadImage = findViewById(R.id.btLoadImage);
+            btLoadImage.setOnClickListener(this);
 
             // read parameters from the intent used to launch the activity.
             boolean autoFocus = true;
@@ -428,6 +439,8 @@ public final class BarcodeCaptureActivity extends AppCompatActivity implements B
             boolean useFlash = flashStatus == USE_FLASH.ON.ordinal();
             createCameraSource(autoFocus, useFlash, getInverseCameraFacing(currentFacing));
             startCameraSource();
+        } else if (i == R.id.btLoadImage) {
+            openGallery();
         }
     }
 
@@ -537,5 +550,73 @@ public final class BarcodeCaptureActivity extends AppCompatActivity implements B
                 finish();
             }
         }
+    }
+
+
+    private Bitmap selectedBitmap;
+
+    private void openGallery() {
+        Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
+        intent.setType("image/*");
+        startActivityForResult(intent, REQUEST_CODE_SELECT_IMAGE);
+    }
+
+    private void scanQRCode(Bitmap bitmap) {
+        String qrContent = decodeQRCode(bitmap);
+        if (qrContent != null) {
+            sentData(qrContent);
+        } else {
+            sentData("-2");
+        }
+
+    }
+
+    private String decodeQRCode(Bitmap bitmap) {
+        int[] pixels = new int[bitmap.getWidth() * bitmap.getHeight()];
+        bitmap.getPixels(pixels, 0, bitmap.getWidth(), 0, 0, bitmap.getWidth(), bitmap.getHeight());
+        RGBLuminanceSource source = new RGBLuminanceSource(bitmap.getWidth(), bitmap.getHeight(), pixels);
+        BinaryBitmap binaryBitmap = new BinaryBitmap(new HybridBinarizer(source));
+
+        MultiFormatReader reader = new MultiFormatReader();
+        try {
+            Result result = reader.decode(binaryBitmap);
+            return result.getText();
+        } catch (ReaderException e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+
+        if (requestCode == REQUEST_CODE_SELECT_IMAGE && resultCode == RESULT_OK) {
+            if (data != null && data.getData() != null) {
+                Uri imageUri = data.getData();
+                try {
+                    InputStream inputStream = getContentResolver().openInputStream(imageUri);
+                    selectedBitmap = BitmapFactory.decodeStream(inputStream);
+                    if (selectedBitmap != null) {
+                        scanQRCode(selectedBitmap);
+                    } else {
+                        sentData("-2");
+                    }
+                } catch (FileNotFoundException e) {
+                    e.printStackTrace();
+                    sentData("-2");
+                }
+            }
+        } else {
+            sentData("-2");
+        }
+    }
+
+    public void sentData(String value) {
+        Intent data = new Intent();
+        data.putExtra(BarcodeImage, value);
+        setResult(SCAN_QR_FROM_IMAGE, data);
+        finish();
     }
 }
