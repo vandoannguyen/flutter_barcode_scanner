@@ -90,7 +90,7 @@
                 android:layout_marginLeft="4dp"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="tải ảnh lên" />
+                android:text="Tải ảnh lên" />
         </LinearLayout>
 
 
