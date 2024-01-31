@@ -100,6 +100,7 @@ public final class BarcodeCaptureActivity extends AppCompatActivity implements B
     private GestureDetector gestureDetector;
 
     private ImageView imgViewBarcodeCaptureUseFlash;
+    private LinearLayout lnFlashButton;
     private ImageView imgViewSwitchCamera;
 
     private ImageView btClose;
@@ -124,6 +125,7 @@ public final class BarcodeCaptureActivity extends AppCompatActivity implements B
     /**
      * Initializes the UI and creates the detector pipeline.
      */
+    @SuppressLint("MissingInflatedId")
     @Override
     public void onCreate(Bundle icicle) {
         super.onCreate(icicle);
@@ -132,6 +134,9 @@ public final class BarcodeCaptureActivity extends AppCompatActivity implements B
 
             btClose = findViewById(R.id.btnIconClose);
             btClose.setOnClickListener(this);
+
+            lnFlashButton = findViewById(R.id.lnFlashButton);
+            lnFlashButton.setVisibility(FlutterBarcodeScannerPlugin.isShowFlashIcon ? View.VISIBLE : View.GONE);
 
             imgViewBarcodeCaptureUseFlash = findViewById(R.id.imgViewBarcodeCaptureUseFlash);
             imgViewBarcodeCaptureUseFlash.setOnClickListener(this);

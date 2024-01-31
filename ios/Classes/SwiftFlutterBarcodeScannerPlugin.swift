@@ -326,7 +326,7 @@ class BarcodeScannerViewController: UIViewController {
     private lazy var logoVietQr : UIImageView! = {
         let logoVietQrView = UIImageView()
         logoVietQrView.translatesAutoresizingMaskIntoConstraints = false
-        logoVietQrView.image = UIImage(named: "ic_viet_qr", in: Bundle(for: SwiftFlutterBarcodeScannerPlugin.self), compatibleWith: nil)
+        logoVietQrView.image = UIImage(named: "ic_gg_charging", in: Bundle(for: SwiftFlutterBarcodeScannerPlugin.self), compatibleWith: nil)
         logoVietQrView.contentMode = .scaleAspectFit
 
         return logoVietQrView
@@ -448,7 +448,7 @@ class BarcodeScannerViewController: UIViewController {
         //Logo VietQR
         self.view.addSubview(logoVietQr)
 
-        logoVietQr.widthAnchor.constraint(equalToConstant: 100).isActive = true
+        logoVietQr.widthAnchor.constraint(equalToConstant: 200).isActive = true
         logoVietQr.heightAnchor.constraint(equalToConstant: 50).isActive = true
         logoVietQr.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: screenSize.width/2 - 50).isActive = true
         logoVietQr.topAnchor.constraint(equalTo: view.topAnchor, constant: yQr - 60).isActive = true
